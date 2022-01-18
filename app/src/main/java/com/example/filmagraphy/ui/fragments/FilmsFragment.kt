@@ -1,31 +1,32 @@
 package com.example.filmagraphy.ui.fragments
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.view.menu.MenuAdapter
+import androidx.core.view.isVisible
+import androidx.navigation.ActivityNavigator
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.filmagraphy.R
-import com.example.filmagraphy.data.api.FilmService
-import com.example.filmagraphy.data.model.Film
 import com.example.filmagraphy.databinding.FragmentFilmsBinding
 import com.example.filmagraphy.presenters.FilmFragmentPresenter
 import com.example.filmagraphy.ui.adapters.FilmsAdapter
 import com.example.filmagraphy.ui.adapters.OnAdapterEventListener
+import com.example.filmagraphy.utils.FilmDiffUtils
 import com.example.filmagraphy.utils.Status
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 
 class FilmsFragment : Fragment(), OnAdapterEventListener {
     private var _binding: FragmentFilmsBinding? = null
     private val binding get() = _binding!!
 
     private val presenter = FilmFragmentPresenter()
+
+    lateinit var adapter: FilmsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,14 +43,14 @@ class FilmsFragment : Fragment(), OnAdapterEventListener {
 
     private fun setRecyclerView() {
         val numberOfGenres = presenter.genresList.size
-        val numberOfFilms = presenter.films.films.size
+        val numberOfFilms = presenter.filmsToShow.size
 
         val recyclerView = binding.recyclerView
-        val adapter = FilmsAdapter(numberOfGenres, numberOfFilms, this)
+        adapter = FilmsAdapter(numberOfGenres, numberOfFilms, this)
         val manager = GridLayoutManager(requireContext(), 2)
         manager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                if (adapter.getItemViewType(position)==3) return 1
+                if (adapter.getItemViewType(position) == 3) return 1
                 return 2
             }
 
@@ -58,13 +59,25 @@ class FilmsFragment : Fragment(), OnAdapterEventListener {
         recyclerView.adapter = adapter
     }
 
+    private fun updateRecyclerView() {
+        val skip = presenter.genresList.size + 2
+        adapter.numberOfFilms = presenter.filmsToShow.size
+        binding.recyclerView.adapter?.notifyItemRangeChanged(skip, presenter.filmsToShow.size)
+        binding.recyclerView.adapter?.notifyItemRangeRemoved(
+            skip + presenter.filmsToShow.size,
+            presenter.filmsAll.films.size - presenter.filmsToShow.size
+        )
+    }
+
     private fun startObserve() {
         presenter.getFilms().observe(this, {
             it?.let { resource ->
                 when (resource.status) {
                     Status.SECCESS -> {
-                        presenter.films = resource.data!!
+                        presenter.filmsAll = resource.data!!
+                        presenter.filmsToShow = presenter.filmsAll.films
                         presenter.genresCount()
+                        binding.progressBar3.isVisible = false
                         setRecyclerView()
                     }
                     Status.ERROR -> {
@@ -78,14 +91,6 @@ class FilmsFragment : Fragment(), OnAdapterEventListener {
         })
     }
 
-    companion object {
-        val TAG = "FilmFragment"
-    }
-
-    override fun onClick(position: Int) {
-        TODO("Not yet implemented")
-    }
-
     override fun onCreateTextHolder(holder: FilmsAdapter.TextHolder, position: Int) {
         when (position) {
             0 -> holder.text.text = getString(R.string.Genres)
@@ -95,16 +100,27 @@ class FilmsFragment : Fragment(), OnAdapterEventListener {
 
     override fun onCreateGenreButtonHolder(holder: FilmsAdapter.GenresHolder, position: Int) {
         holder.genreButton.text = presenter.genresList[position - 1]
+        holder.genreButton.setOnClickListener {
+            val text = holder.genreButton.text.toString()
+            presenter.genreClick(text)
+            updateRecyclerView()
+        }
     }
 
     override fun onCreateFilmHolder(holder: FilmsAdapter.FilmsHolder, position: Int) {
         val skipPosition = presenter.genresList.size + 2
-        val film = presenter.films.films[position - skipPosition]
+        val film = presenter.filmsToShow[position - skipPosition]
 
         Picasso.with(requireContext())
             .load(film.imageUrl)
             .placeholder(R.drawable.ic_launcher_background)
             .into(holder.poster)
         holder.name.text = film.localName
+
+        holder.itemView.setOnClickListener {
+            val action = FilmsFragmentDirections.actionFilmsFragmentToInfoFragment()
+            action.id = film.id
+            this.findNavController().navigate(action)
+        }
     }
 }

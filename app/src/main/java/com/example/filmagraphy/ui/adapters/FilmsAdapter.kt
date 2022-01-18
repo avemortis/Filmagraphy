@@ -3,6 +3,7 @@ package com.example.filmagraphy.ui.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.filmagraphy.data.model.Film
 import com.example.filmagraphy.databinding.FragmentFilmsItemTextBinding
 import com.example.filmagraphy.databinding.FragmentFilmsItemGenreButtonBinding
 import com.example.filmagraphy.databinding.FragmentFilmsItemFilmBinding
@@ -61,7 +62,11 @@ class FilmsAdapter(
                 return FilmsHolder(binding)
             }
         }
-        TODO()
+        return TextHolder(FragmentFilmsItemTextBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        ))
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -86,7 +91,6 @@ class FilmsAdapter(
 }
 
 interface OnAdapterEventListener {
-    fun onClick(position: Int)
     fun onCreateTextHolder(holder: FilmsAdapter.TextHolder, position: Int)
     fun onCreateGenreButtonHolder(holder: FilmsAdapter.GenresHolder, position: Int)
     fun onCreateFilmHolder(holder: FilmsAdapter.FilmsHolder, position: Int)
