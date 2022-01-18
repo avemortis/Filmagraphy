@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Filmography</string>
+
+    <string name="Films">Films</string>
+    <string name="Genres">Genres</string>
+
+    <string name="Drama">drama</string>
+    <string name="Fantasy">fantasy</string>
+    <string name="Criminal">criminal</string>
+    <string name="Detective">detective</string>
+    <string name="Melodrama">melodrama</string>
+    <string name="Biography">biography</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
