@@ -37,6 +37,11 @@ class FilmsFragment : Fragment(), OnAdapterEventListener {
         return binding.root
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
+
     private fun setRecyclerView() {
         val numberOfGenres = presenter.genresList.size
         val numberOfFilms = presenter.filmsToShow.size
