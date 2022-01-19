@@ -1,5 +1,6 @@
 package com.example.filmagraphy.presenters
 
+import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.liveData
 import com.example.filmagraphy.data.api.FilmService
@@ -11,15 +12,24 @@ import kotlinx.coroutines.Dispatchers
 class FilmFragmentPresenter {
     val service = FilmService()
     lateinit var filmsAll : FilmList
-    lateinit var filmsToShow: List<Film>
+    var filmsToShow: List<Film> = emptyList()
     var genresList: MutableList<String> = mutableListOf()
+
+
     fun getFilms() = liveData(Dispatchers.IO) {
         emit(Resource.loading(data = null))
         try {
-            emit(Resource.success(service.getAllFilms()))
+            load()
+            emit(Resource.success(filmsToShow))
         } catch (e: Exception) {
             emit(Resource.error(data = null, message = e.message ?: "Error"))
         }
+    }
+
+    private suspend fun load(){
+        filmsAll = service.getAllFilms()
+        filmsToShow = filmsAll.films
+        genresCount()
     }
 
     fun genreClick(genre : String) {
@@ -28,7 +38,6 @@ class FilmFragmentPresenter {
             if (film.genres.contains(genre)) newList.add(film)
         }
         filmsToShow = newList
-        Log.d("1", "1")
     }
 
     fun genresCount() {
@@ -37,5 +46,9 @@ class FilmFragmentPresenter {
                 if (!genresList.contains(genre)) genresList.add(genre)
             }
         }
+    }
+
+    companion object {
+        val GENRE_TAG = "GENRE"
     }
 }

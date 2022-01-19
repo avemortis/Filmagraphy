@@ -28,10 +28,6 @@ class FilmsFragment : Fragment(), OnAdapterEventListener {
 
     lateinit var adapter: FilmsAdapter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -74,17 +70,14 @@ class FilmsFragment : Fragment(), OnAdapterEventListener {
             it?.let { resource ->
                 when (resource.status) {
                     Status.SECCESS -> {
-                        presenter.filmsAll = resource.data!!
-                        presenter.filmsToShow = presenter.filmsAll.films
-                        presenter.genresCount()
                         binding.progressBar3.isVisible = false
                         setRecyclerView()
                     }
                     Status.ERROR -> {
-
+                        binding.progressBar3.isVisible = false
                     }
                     Status.LOADING -> {
-
+                        binding.progressBar3.isVisible = true
                     }
                 }
             }

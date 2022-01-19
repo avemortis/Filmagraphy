@@ -42,7 +42,7 @@ class InfoFragment : Fragment() {
                 when (resource.status) {
                     Status.SECCESS -> {
                         binding.progressBar.isVisible = false
-                        resource.data!!.films.forEach { film->
+                        resource.data!!.forEach { film->
                             if (film.id == args.id) {
                                 Picasso.with(requireContext())
                                     .load(film.imageUrl)
