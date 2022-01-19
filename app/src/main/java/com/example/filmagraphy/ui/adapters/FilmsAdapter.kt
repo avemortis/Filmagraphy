@@ -13,6 +13,16 @@ class FilmsAdapter(
     var numberOfFilms: Int,
     private val listener: OnAdapterEventListener
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    private val typeList: MutableList<ViewType> = mutableListOf()
+
+    init {
+        typeList.add(ViewType.TEXT)
+        for (i in 0 until numberOfGenres) typeList.add(ViewType.GENRE)
+        typeList.add(ViewType.TEXT)
+        for (i in 0 until numberOfFilms) typeList.add(ViewType.FILM)
+    }
+
     class TextHolder(binding: FragmentFilmsItemTextBinding) :
         RecyclerView.ViewHolder(binding.root) {
         val text = binding.itemText
@@ -30,9 +40,11 @@ class FilmsAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        if ((position == 0)||(position == numberOfGenres + 1)) return 1
-        if (position in 1..numberOfGenres) return 2
-        return 3
+        return when (typeList[position]) {
+            ViewType.TEXT -> 1
+            ViewType.GENRE -> 2
+            ViewType.FILM -> 3
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -94,4 +106,10 @@ interface OnAdapterEventListener {
     fun onCreateTextHolder(holder: FilmsAdapter.TextHolder, position: Int)
     fun onCreateGenreButtonHolder(holder: FilmsAdapter.GenresHolder, position: Int)
     fun onCreateFilmHolder(holder: FilmsAdapter.FilmsHolder, position: Int)
+}
+
+enum class ViewType {
+    TEXT,
+    GENRE,
+    FILM
 }
